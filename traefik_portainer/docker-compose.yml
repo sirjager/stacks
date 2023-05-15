@@ -1,0 +1,82 @@
+version: '3.8'
+
+networks:
+  proxy:
+    external: true
+
+volumes:
+  portainer_data:
+
+services:
+  traefik:
+    image: 'traefik:latest'
+    container_name: traefik
+    restart: unless-stopped
+    security_opt:
+      - 'no-new-privileges:true'
+    networks:
+      - proxy
+    ports:
+      - 80:80
+      - 443:443
+      # - 8080:8080 # managed by traefik, can be accessed at : traefik.localhost
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      - '/var/run/docker.sock:/var/run/docker.sock:ro'
+      - './acme.json:/acme.json'
+      - ./volumes/traefik/logs:/logs
+    command:
+      - --log.level=INFO
+      - --log.filePath=/logs/traefik.log
+      - --accessLog=true
+      - --accessLog.filePath=/logs/access.log
+
+      - --entrypoints.web.address=:80
+      # - --entrypoints.websecure.address=:443
+      - --entrypoints.traefik.address=:8080
+
+      # - --entrypoints.websecure.http.middlewares=secureHeaders@file
+      # - --entrypoints.websecure.tls.certresolver=letsencrypt
+      - --providers.docker
+      - --providers.docker.network=proxy
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.endpoint=unix:///var/run/docker.sock
+      - '--providers.docker.defaultRule=Host(`{{ index .Labels "com.docker.compose.service" }}.localhost`)'
+
+      - --api
+      - --api.dashboard=true
+      - --api.insecure=true
+
+      # - --certificatesresolvers.letsencrypt.acme.email=myemail@gmail.com
+      # - --certificatesresolvers.letsencrypt.acme.storage=acme.json
+      # - --certificatesresolvers.letsencrypt.acme.keytype=RSA4096
+      # - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
+
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.traefik.entrypoints=web
+      - traefik.http.services.traefik.loadbalancer.server.port=8080
+      - traefik.http.routers.dashboard.middlewares=auth
+      - 'traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$aWLhNFGx$$i9f4YV5Kkl5Niv/j2Fp10/'
+
+  portainer:
+    image: 'portainer/portainer-ce:latest'
+    container_name: portainer
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+    # ports:
+    #   - 9000  # managed by traefik, can be accessed at : portainer.localhost
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.portainer.entrypoints=web
+      - traefik.http.routers.portainer.service=portainer
+      - traefik.http.services.portainer.loadbalancer.server.port=9000
