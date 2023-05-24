@@ -21,6 +21,7 @@ services:
       DB_CLIENT: pg
       DB_PORT: 5432
       DB_HOST: directus_db
+      DB_DATABASE: ${DB_NAME}
 
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASS}
@@ -31,6 +32,6 @@ services:
     volumes:
       - directus_db:/var/lib/postgresql/data
     environment:
-      - POSTGRES_USER=${DATABASE_USERNAME}
-      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
-      - POSTGRES_DB=${DATABASE_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+      - POSTGRES_DB=${DB_NAME}
