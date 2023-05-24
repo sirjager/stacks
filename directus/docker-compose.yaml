@@ -6,6 +6,7 @@ volumes:
 
 services:
   directus:
+    container_name: directus
     image: directus/directus:latest
     depends_on:
       - directus_db
