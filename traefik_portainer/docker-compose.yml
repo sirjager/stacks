@@ -19,7 +19,7 @@ services:
     ports:
       - 80:80
       - 443:443
-      # - 8080:8080 # managed by traefik, can be accessed at : traefik.localhost
+      - 8080:8080 # managed by traefik, can be accessed at : traefik.localhost
     volumes:
       - '/etc/localtime:/etc/localtime:ro'
       - '/var/run/docker.sock:/var/run/docker.sock:ro'
@@ -41,7 +41,7 @@ services:
       - --providers.docker.network=proxy
       - --providers.docker.exposedbydefault=false
       - --providers.docker.endpoint=unix:///var/run/docker.sock
-      - '--providers.docker.defaultRule=Host(`{{ index .Labels "com.docker.compose.service" }}.localhost`)'
+      - '--providers.docker.defaultRule=Host(`{{ index .Labels "com.docker.compose.service" }}.local`)'
 
       - --api
       - --api.dashboard=true
@@ -68,8 +68,8 @@ services:
       - no-new-privileges:true
     networks:
       - proxy
-    # ports:
-    #   - 9000  # managed by traefik, can be accessed at : portainer.localhost
+    ports:
+      - 9000 # managed by traefik, can be accessed at : portainer.localhost
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock

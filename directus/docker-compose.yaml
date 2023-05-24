@@ -1,0 +1,35 @@
+version: '3'
+
+volumes:
+  directus_db:
+  directus_data:
+
+services:
+  directus:
+    image: directus/directus:latest
+    depends_on:
+      - directus_db
+    # ports:
+    #   - 8055:8055  # use proxy servers
+    volumes:
+      - directus_data:/directus
+    environment:
+      KEY: ${KEY}
+      SECRET: ${SECRET}
+
+      DB_CLIENT: pg
+      DB_PORT: 5432
+      DB_HOST: directus_db
+
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASS}
+
+  directus_db:
+    container_name: directus_db
+    image: postgres:14-alpine
+    volumes:
+      - directus_db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${DATABASE_USERNAME}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_DB=${DATABASE_NAME}
