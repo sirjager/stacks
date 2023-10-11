@@ -2,3 +2,7 @@ volumes/
 acme.json
 
 .env
+
+wordpress/*
+!wordpress/docker-compose.yaml
+!wordpress/example.env

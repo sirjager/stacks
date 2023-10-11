@@ -1,0 +1,31 @@
+version: '3.9'
+volumes:
+  wordpress_db:
+networks:
+  proxy:
+    external: true
+services:
+  wordpress_db:
+    container_name: wordpress_db
+    image: mariadb:lts
+    # image: mysql:8.0.27  # If you really want to use MySQL, uncomment the following line
+    # command: --default-authentication-plugin=mysql_native_password
+    volumes: ['wordpress_db:/var/lib/mysql:delegated']
+    restart: unless-stopped
+    networks: [proxy]
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+  wordpress:
+    container_name: wordpress
+    image: wordpress:latest
+    # ports: [':80']  # using nginx
+    restart: always
+    networks: [proxy]
+    environment:
+      WORDPRESS_DB_HOST: wordpress_db
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
