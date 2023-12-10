@@ -1,0 +1,34 @@
+---
+version: "3"
+
+dotenv:
+  - .env
+
+tasks:
+  up:
+    desc: Runs containers
+    silent: true
+    dir: '{{.USER_WORKING_DIR}}'
+    preconditions:
+      - test -f docker-compose.yml
+    cmds:
+      - docker compose up -d
+
+  down:
+    desc: Stops containers
+    silent: true
+    dir: '{{.USER_WORKING_DIR}}'
+    preconditions:
+      - test -f docker-compose.yml
+    cmds:
+      - docker compose down
+
+  restart:
+    desc: Restarts containers
+    silent: true
+    dir: '{{.USER_WORKING_DIR}}'
+    preconditions:
+      - test -f docker-compose.yml
+    cmds:
+      - task: down
+      - task: up
