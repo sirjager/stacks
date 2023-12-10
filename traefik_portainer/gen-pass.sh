@@ -1,5 +1,7 @@
-read -p "Enter username : " _user
-read -p "Enter password : " _pass
+#!/bin/bash
+read -p "Enter username: " _user
+read -p "Enter password: " _pass
 
-echo $(htpasswd -nb $_user $_pass) | sed -e s/\\$/\\$\\$/g
+hashed=$(openssl passwd -apr1 "$_pass" | sed 's/\$/\$$/g')
 
+echo "$hashed" | xclip -selection clipboard

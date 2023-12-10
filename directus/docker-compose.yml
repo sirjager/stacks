@@ -60,4 +60,4 @@ services:
       CACHE_TTL: 1m
       CACHE_AUTO_PURGE: false
       REDIS_HOST: directus_cache
-      # CACHE_VALUE_MAX_SIZE: 250MB
+      CACHE_VALUE_MAX_SIZE: 250MB

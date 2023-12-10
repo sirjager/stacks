@@ -1,39 +1,28 @@
 version: '3'
-
 networks:
   proxy:
     external: true
   nginx:
     driver: bridge
-
 volumes:
   nginx_db:
   nginx_data:
   letsencrypt:
   portainer_data:
-
 services:
   nginx:
     container_name: nginx
     image: jc21/nginx-proxy-manager:latest
     restart: always
-    ports:
-      - '80:80'
-      - '81:81'
-      - '443:443'
-    networks:
-      - nginx
-      - proxy
+    ports: ['80:80', '81:81', '443:443']
+    networks: [nginx, proxy]
     environment:
       DB_MYSQL_HOST: nginx_db
       DB_MYSQL_PORT: 3306
       DB_MYSQL_NAME: nginx
       DB_MYSQL_USER: nginx
-      DB_MYSQL_PASSWORD: '${MYSQL_PASSWORD}'
-    volumes:
-      - nginx_data:/data
-      - letsencrypt:/etc/letsencrypt
-
+      DB_MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes: ['nginx_data:/data', 'letsencrypt:/etc/letsencrypt']
   nginx_db:
     container_name: nginx_db
     image: jc21/mariadb-aria:latest
@@ -41,27 +30,19 @@ services:
     environment:
       MYSQL_DATABASE: nginx
       MYSQL_USER: nginx
-      MYSQL_PASSWORD: '${MYSQL_PASSWORD}'
-      MYSQL_ROOT_PASSWORD: '${MYSQL_ROOT_PASSWORD}'
-    networks:
-      - nginx
-    volumes:
-      - nginx_db:/var/lib/mysql
-
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    networks: [nginx]
+    volumes: ['nginx_db:/var/lib/mysql']
   portainer:
     image: portainer/portainer-ce:latest
     container_name: portainer
     restart: unless-stopped
-    # ports:
-    # - 9000:9000 # use nginx to access dashboard
-    security_opt:
-      - no-new-privileges:true
-    networks:
-      - proxy
+    ports:
+      - 9000:9000 # use nginx to access dashboard
+    security_opt: ['no-new-privileges:true']
+    networks: [proxy]
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
-
-
-
