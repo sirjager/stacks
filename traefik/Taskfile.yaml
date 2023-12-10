@@ -1,0 +1,25 @@
+---
+version: "3"
+
+dotenv:
+  - .env
+
+tasks:
+  restart:
+    desc: Restarts traefik
+    silent: true
+    cmds:
+      - docker compose down
+      - docker compose up -d
+
+  start:
+    desc: Starts traefik
+    silent: true
+    cmds:
+      - docker compose up -d
+  
+  stop:
+    desc: Stops traefik
+    silent: true
+    cmds:
+      - docker compose down
