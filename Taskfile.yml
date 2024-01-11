@@ -32,3 +32,14 @@ tasks:
     cmds:
       - task: down
       - task: up
+
+  register:
+    desc: Registers for systemd service
+    dir: '{{.USER_WORKING_DIR}}'
+    silent: true
+    cmd: |-
+      DIR_NAME=$(basename {{.USER_WORKING_DIR}}) && \
+      sudo cp system.service /etc/systemd/system/$DIR_NAME.service && \
+      sudo systemctl daemon-reload && \
+      sudo systemctl enable --now $DIR_NAME.service && \
+      systemctl status $DIR_NAME.service
