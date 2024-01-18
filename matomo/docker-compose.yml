@@ -16,40 +16,46 @@ networks:
 
 volumes:
   matomo:
-  matomo-maria:
+  matomo-db:
 
 services:
-  matomo:
-    container_name: matomo
-    image: matomo:5.0.1
-    restart: always
-    networks:
-      - proxy
-    volumes:
-      - matomo:/var/www/html
-    environment:
-      PHP_MEMORY_LIMIT: 750M
-      MATOMO_DATABASE_HOST: matomo-maria
-      MATOMO_DATABASE_ADAPTER: mysql
-      MATOMO_DATABASE_TABLES_PREFIX: matomo_
-      MATOMO_DATABASE_USERNAME: ${MYSQL_USER}
-      MATOMO_DATABASE_DBNAME: ${MYSQL_DATABASE}
-      MATOMO_DATABASE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
 
-  matomo-maria:
-    image: mariadb:11.3-rc
-    container_name: matomo-maria
+  matomo-db:
+    image: mariadb:10.11
+    container_name: matomo-db
     command: --max-allowed-packet=64MB
     restart: always
     networks:
       - proxy
     volumes:
-      - matomo-maria:/var/lib/mysql
+      - matomo-db:/var/lib/mysql
     environment:
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: matomo
+      MYSQL_DATABASE: matomo
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MARIADB_AUTO_UPGRADE: 1
       MARIADB_INITDB_SKIP_TZINFO: 1
       MARIADB_DISABLE_UPGRADE_BACKUP: 1
+
+  matomo:
+    container_name: matomo
+    image: matomo:5.0.1
+    restart: always
+    links:
+      - matomo-db
+    networks:
+      - proxy
+    volumes:
+      - ./data:/var/www/html
+    depends_on:
+      - matomo-db
+    environment:
+      PHP_MEMORY_LIMIT: 750M
+      MATOMO_DATABASE_HOST: matomo-db
+      ## Keep Disabled: Conflicts with Enviroment Variables Plugin
+      # MATOMO_DATABASE_ADAPTER: mysql
+      MATOMO_DATABASE_TABLES_PREFIX: matomo_
+      MATOMO_DATABASE_USERNAME: matomo
+      MATOMO_DATABASE_DBNAME: matomo
+      MATOMO_DATABASE_PASSWORD: ${MYSQL_PASSWORD}

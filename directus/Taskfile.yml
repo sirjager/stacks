@@ -1,0 +1,61 @@
+# ===================================================================
+# Task is a task runner / build tool that aims to be simpler and easier
+# to use than, for example, GNU Make.
+# ===================================================================
+# Once installed, you just need to describe your build tasks using a 
+# simple YAML schema in a file called Taskfile.yml:
+# ===================================================================
+# Install TaskFile from :https://taskfile.dev/installation
+# ===================================================================
+
+---
+version: "3"
+
+dotenv:
+  - .env
+
+silent: true
+
+tasks:
+
+  export:
+    desc: Exports directus instance
+    dir: "{{.USER_WORKING_DIR}}"
+    preconditions:
+      - test -f .env
+    cmds:
+      - npx directus-template-cli@latest extract
+
+  restart:
+    desc: Restarts docker containers
+    dir: "{{.USER_WORKING_DIR}}"
+    preconditions:
+      - test -f docker-compose.yml
+    cmds:
+      - task: down
+      - task: up
+
+  up:
+    desc: Starts docker containers
+    dir: "{{.USER_WORKING_DIR}}"
+    preconditions:
+      - test -f docker-compose.yml
+    cmds:
+      - docker compose up -d
+      - docker exec -u root directus chown -R node:node /directus /directus/extensions /directus/database /directus/uploads
+
+  down:
+    desc: Stops docker containers
+    dir: "{{.USER_WORKING_DIR}}"
+    preconditions:
+      - test -f docker-compose.yml
+    cmds:
+      - docker compose down
+
+  pull:
+    desc: Pulls latest images
+    dir: "{{.USER_WORKING_DIR}}"
+    preconditions:
+      - test -f docker-compose.yml
+    cmds:
+      - docker compose pull
