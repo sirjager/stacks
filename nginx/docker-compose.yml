@@ -20,6 +20,7 @@ services:
     ports:
       - '80:80'
       - '443:443'
+      - "81:81" ## Disable In Production
     networks:
       - nginx
       - proxy

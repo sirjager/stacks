@@ -10,13 +10,12 @@ networks:
 
 services:
   portainer:
-    image: 'portainer/portainer-ce:latest'
+    image: portainer/portainer-ce:latest
     container_name: portainer
     restart: unless-stopped
-    networks:
-      - proxy
-    security_opt:
-      - no-new-privileges:true
+    ports: [9000:9000] ## Disable in production
+    networks: [proxy]
+    security_opt: [no-new-privileges:true]
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock

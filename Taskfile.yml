@@ -33,6 +33,15 @@ tasks:
       - task: down
       - task: up
 
+  pull:
+    desc: Pulls latest images
+    silent: true
+    dir: '{{.USER_WORKING_DIR}}'
+    preconditions:
+      - test -f docker-compose.yml
+    cmds:
+      - docker compose pull
+
   register:
     desc: Registers for systemd service
     dir: '{{.USER_WORKING_DIR}}'
