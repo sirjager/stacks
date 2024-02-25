@@ -41,7 +41,8 @@ tasks:
     preconditions:
       - test -f docker-compose.yml
     cmds:
-      - docker compose up -d
+      - docker compose up -d directus-db directus-cache
+      - docker compose up -d directus
       - docker exec -u root directus chown -R node:node /directus /directus/extensions /directus/database /directus/uploads
 
   down:

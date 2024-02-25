@@ -2,7 +2,8 @@
 version: "3"
 
 volumes:
-  directus_db:
+  directus-db:
+  directus-cache:
 
 networks:
   directus:
@@ -11,82 +12,44 @@ networks:
 
 services:
 
-  directus_directus:
-    container_name: directus_directus
-    image: directus/directus:10.8
-    depends_on:
-      - directus_db
-      - directus_cache
-    ports:
-      - 8055:8055  # use revers proxy to access this port
-    volumes:
-      - "./uploads:/directus/uploads"
-      - "./database:/directus/database"
-    networks:
-      - directus
-      - proxy
-    environment:
-      TELEMETRY: false
-
-      FLOWS_EXEC_ALLOWED_MODULES: array:moment,uuid
-
-      # App URL
-      PUBLIC_URL: ${PUBLIC_URL}
-
-      # App Keys
-      KEY: ${KEY}
-      SECRET: ${SECRET}
-
-      # Admin Creds
-      ADMIN_EMAIL: ${ADMIN_EMAIL}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
-
-      # Emails Sender
-      EMAIL_TRANSPORT: smtp
-      EMAIL_VERIFY_SETUP: true
-      EMAIL_FROM: ${EMAIL_FROM}
-      EMAIL_SMTP_HOST: ${EMAIL_SMTP_HOST}
-      EMAIL_SMTP_PORT: ${EMAIL_SMTP_PORT}
-      EMAIL_SMTP_USER: ${EMAIL_SMTP_USER}
-      EMAIL_SMTP_PASSWORD: ${EMAIL_SMTP_PASSWORD}
-
-      # Database
-      DB_CLIENT: pg
-      DB_CONNECTION_STRING: pg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@directus_db/${POSTGRES_DB}
-
-      # Cache
-      CACHE_ENABLED: true
-      CACHE_STORE: redis
-      CACHE_TTL: 1m
-      CACHE_AUTO_PURGE: false
-      REDIS_HOST: directus_cache
-      CACHE_VALUE_MAX_SIZE: 250MB
-
-      # Storage Locations
-      STORAGE_LOCATIONS: "local"
-      STORAGE_LOCAL_ROOT: "./uploads"
-      FILES_MAX_UPLOAD_SIZE: "20mb"
-
-      # Messenger 
-      MESSENGER_STORE: "redis"
-
-      # Web Sockets
-      WEBSOCKETS_ENABLED: true
-
-  directus_cache:
-    container_name: directus_cache
+  directus-cache:
+    container_name: directus-cache
     image: redis:latest
     networks:
       - directus
+    volumes:
+      - directus-cache:/data
 
-  directus_db:
-    container_name: directus_db
+  directus-db:
+    container_name: directus-db
     image: postgis/postgis:latest
+    depends_on:
+      - directus-cache
     networks:
       - directus
     volumes:
-      - "directus_db:/var/lib/postgresql/data"
+      - "directus-db:/var/lib/postgresql/data"
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+  directus:
+    container_name: directus
+    image: directus/directus:10.9.3
+    depends_on:
+      - directus-cache
+      - directus-db
+    ports: [8055:8055] ## Disable in production
+    volumes:
+      - "./data/uploads:/directus/uploads"
+      - "./data/database:/directus/database"
+    networks:
+      - directus
+      - proxy
+    env_file: .env
+    environment:
+      DB_CLIENT: pg
+      DB_CONNECTION_STRING: pg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@directus-db/${POSTGRES_DB}
+      REDIS_HOST: directus-cache
+      WEBSOCKETS_ENABLED: true
